@@ -44,10 +44,6 @@ pub trait TryCastInto<T>: Sized {
             Err(on_err(&self))
         }
     }
-
-    fn matches<O: TryCastFrom<Self>>(&self) -> bool {
-        O::can_cast_from(self)
-    }
 }
 
 impl<F, T: CastFrom<F>> TryCastFrom<F> for T {
@@ -67,5 +63,80 @@ impl<F, T: TryCastFrom<F>> TryCastInto<T> for F {
 
     fn opt_cast_into(self) -> Option<T> {
         T::opt_cast_from(self)
+    }
+}
+
+pub trait Match: Sized {
+    fn matches<T: TryCastFrom<Self>>(&self) -> bool {
+        T::can_cast_from(self)
+    }
+}
+
+impl<F> Match for F {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct CastError;
+
+    struct Foo {
+        a: i32,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    struct Bar {
+        b: u32,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    struct Baz {
+        bar: Bar,
+    }
+
+    impl CastFrom<Foo> for Bar {
+        fn cast_from(foo: Foo) -> Self {
+            Bar { b: foo.a as u32 }
+        }
+    }
+
+    impl TryCastFrom<Bar> for Baz {
+        fn can_cast_from(bar: &Bar) -> bool {
+            bar.b == 0
+        }
+
+        fn opt_cast_from(bar: Bar) -> Option<Self> {
+            if bar.b == 0 {
+                Some(Self { bar })
+            } else {
+                None
+            }
+        }
+    }
+
+    #[test]
+    fn test_cast() {
+        let foo = Foo { a: 1 };
+        assert_eq!(Bar::cast_from(foo), Bar { b: 1 })
+    }
+
+    #[test]
+    fn test_matches() {
+        let bar0 = Bar { b: 0 };
+        let bar1 = Bar { b: 1 };
+        assert!(bar0.matches::<Baz>());
+        assert!(!bar1.matches::<Baz>());
+    }
+
+    #[test]
+    fn test_try_cast() {
+        let bar0 = Bar { b: 0 };
+        let bar1 = Bar { b: 1 };
+
+        assert_eq!(Baz::opt_cast_from(bar0), Some(Baz { bar: bar0 }));
+        assert_eq!(Baz::opt_cast_from(bar1), None);
+
+        assert!(Baz::try_cast_from(bar0, |_| CastError).is_ok());
+        assert!(Baz::try_cast_from(bar1, |_| CastError).is_err());
     }
 }
