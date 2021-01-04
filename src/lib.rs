@@ -1,6 +1,6 @@
 //! `safecast` defines traits analogous to [`From`], [`Into`], [`TryFrom`], and [`TryInto`] to
-//! standardize the implementation of casting between Rust types. The [`can_cast_from`] and
-//! [`can_cast_into`] methods borrow the source value, allowing pattern matching without moving.
+//! standardize the implementation of casting between Rust types. The `can_cast_from` and
+//! `can_cast_into` methods borrow the source value, allowing pattern matching without moving.
 //!
 //! Example:
 //! ```ignore
@@ -48,9 +48,9 @@ impl<T, F: CastFrom<T>> CastInto<F> for T {
 }
 
 /// Trait for defining a cast operation when the source type cannot always be cast to the
-/// destination type. Defines a [`can_cast_from`] method which borrows the source value, allowing
+/// destination type. Defines a `can_cast_from` method which borrows the source value, allowing
 /// for pattern matching without moving the value. When `can_cast_from` returns `true`, calling
-/// [`opt_cast_from`] *must* return `Some(...)`, otherwise [`try_cast_from`] may panic.
+/// `opt_cast_from` *must* return `Some(...)`, otherwise `try_cast_from` may panic.
 ///
 /// Analogous to [`TryFrom`].
 /// The inverse of [`TryCastInto`].
@@ -73,9 +73,9 @@ pub trait TryCastFrom<T>: Sized {
     }
 }
 /// Trait for defining a cast operation when the destination type cannot always be cast from the
-/// source type. Defines a [`can_cast_into`] method which borrows `self`, allowing for pattern
+/// source type. Defines a `can_cast_into` method which borrows `self`, allowing for pattern
 /// matching without moving `self`. If `can_cast_into` returns `true`, then calling
-/// [`opt_cast_into`] *must* return `Some(...)`, otherwise [`try_cast_into`] may panic.
+/// `opt_cast_into` *must* return `Some(...)`, otherwise `try_cast_into` may panic.
 ///
 /// Analogous to [`TryFrom`].
 /// The inverse of [`TryCastInto`].
@@ -119,7 +119,7 @@ impl<F, T: TryCastFrom<F>> TryCastInto<T> for F {
 }
 
 /// Blanket implementation of a convenience method [`matches`] which allows calling
-/// [`can_cast_from`] with a type parameter. Do not implement this trait.
+/// `can_cast_from` with a type parameter. Do not implement this trait.
 pub trait Match: Sized {
     /// Returns `true` if `self` can be cast into the target type `T`.
     fn matches<T: TryCastFrom<Self>>(&self) -> bool {
