@@ -1,9 +1,11 @@
 [package]
 name = "safecast"
 version = "0.1.0"
-authors = ["Haydn Vestal <haydnv@gmail.com>"]
+authors = ["haydnv"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license-file = "LICENSE"
+description = "Traits to define safe casting between types"
+repository = "https://github.com/haydnv/safecast.git"
+readme = "README"
 
 [dependencies]
