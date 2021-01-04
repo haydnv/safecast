@@ -1,7 +1,36 @@
+//! `safecast` defines traits analogous to [`From`], [`Into`], [`TryFrom`], and [`TryInto`] to
+//! standardize the implementation of casting between Rust types. The [`can_cast_from`] and
+//! [`can_cast_into`] methods borrow the source value, allowing pattern matching without moving.
+//!
+//! Example:
+//! ```ignore
+//! let value = serde_json::from_str("1");
+//! if value.matches::<i32>() {
+//!     println!("It's an integer!");
+//! } else if value.matches::<String>() {
+//!     let value = String::opt_cast_from(value).unwrap();
+//!     println!("no, it's a string: {}", value);
+//! }
+//! ```
+
+#[allow(unused_imports)]
+use std::convert::{TryFrom, TryInto};
+
+/// Trait for defining a cast operation from some source type `T`.
+/// Analogous to [`std::convert::From`].
+/// The inverse of [`CastInto`].
+/// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
+/// provides an implementation of `CastInto`.
+
 pub trait CastFrom<T> {
     fn cast_from(value: T) -> Self;
 }
 
+/// Trait for defining a cast operation to some destination type T.
+/// Analogous to [`std::convert::Into`].
+/// The inverse of [`CastFrom`].
+/// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
+/// provides an implementation of `CastInto`.
 pub trait CastInto<T> {
     fn cast_into(self) -> T;
 }
@@ -18,11 +47,23 @@ impl<T, F: CastFrom<T>> CastInto<F> for T {
     }
 }
 
+/// Trait for defining a cast operation when the source type cannot always be cast to the
+/// destination type. Defines a [`can_cast_from`] method which borrows the source value, allowing
+/// for pattern matching without moving the value. When `can_cast_from` returns `true`, calling
+/// [`opt_cast_from`] *must* return `Some(...)`, otherwise [`try_cast_from`] may panic.
+///
+/// Analogous to [`TryFrom`].
+/// The inverse of [`TryCastInto`].
+/// Prefer implementing `TryCastFrom` over `TryCastInto` because implementing `TryCastFrom`
+/// automatically provides an implementation of `TryCastInto`.
 pub trait TryCastFrom<T>: Sized {
+    /// Test if `value` can be cast into `Self`.
     fn can_cast_from(value: &T) -> bool;
 
+    /// Returns `Some(Self)` if the source value can be cast into `Self`, otherwise `None`.
     fn opt_cast_from(value: T) -> Option<Self>;
 
+    /// Returns `Ok(Self)` if the source value can be cast into `Self`, otherwise calls `on_err`.
     fn try_cast_from<Err, OnErr: FnOnce(&T) -> Err>(value: T, on_err: OnErr) -> Result<Self, Err> {
         if Self::can_cast_from(&value) {
             Ok(Self::opt_cast_from(value).unwrap())
@@ -31,12 +72,23 @@ pub trait TryCastFrom<T>: Sized {
         }
     }
 }
-
+/// Trait for defining a cast operation when the destination type cannot always be cast from the
+/// source type. Defines a [`can_cast_into`] method which borrows `self`, allowing for pattern
+/// matching without moving `self`. If `can_cast_into` returns `true`, then calling
+/// [`opt_cast_into`] *must* return `Some(...)`, otherwise [`try_cast_into`] may panic.
+///
+/// Analogous to [`TryFrom`].
+/// The inverse of [`TryCastInto`].
+/// Prefer implementing `TryCastFrom` over `TryCastInto` because implementing `TryCastFrom`
+/// automatically provides an implementation of `TryCastInto`.
 pub trait TryCastInto<T>: Sized {
+    /// Test if `self` can be cast into `T`.
     fn can_cast_into(&self) -> bool;
 
+    /// Returns `Some(T)` if `self` can be cast into `T`, otherwise `None`.
     fn opt_cast_into(self) -> Option<T>;
 
+    /// Returns `Ok(T)` if `self` can be cast into `T`, otherwise calls `on_err`.
     fn try_cast_into<Err, OnErr: FnOnce(&Self) -> Err>(self, on_err: OnErr) -> Result<T, Err> {
         if self.can_cast_into() {
             Ok(self.opt_cast_into().unwrap())
@@ -66,7 +118,10 @@ impl<F, T: TryCastFrom<F>> TryCastInto<T> for F {
     }
 }
 
+/// Blanket implementation of a convenience method [`matches`] which allows calling
+/// [`can_cast_from`] with a type parameter. Do not implement this trait.
 pub trait Match: Sized {
+    /// Returns `true` if `self` can be cast into the target type `T`.
     fn matches<T: TryCastFrom<Self>>(&self) -> bool {
         T::can_cast_from(self)
     }
