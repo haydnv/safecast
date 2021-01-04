@@ -6,6 +6,9 @@ edition = "2018"
 license-file = "LICENSE"
 description = "Traits to define safe casting between types"
 repository = "https://github.com/haydnv/safecast.git"
-readme = "README"
+readme = "README.md"
+
+categories = ["rust-patterns"]
+keywords = ["cast", "casting", "safe cast", "safe casting"]
 
 [dependencies]
