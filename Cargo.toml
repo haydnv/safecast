@@ -9,6 +9,6 @@ repository = "https://github.com/haydnv/safecast.git"
 readme = "README.md"
 
 categories = ["rust-patterns"]
-keywords = ["cast", "casting", "safe cast", "safe casting"]
+keywords = ["cast", "casting", "safe-cast", "try-cast"]
 
 [dependencies]
