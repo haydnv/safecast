@@ -1,2 +1,2 @@
 # safecast
-Rust trait to define safe casting between types
+Rust traits to define safe casting between types.
