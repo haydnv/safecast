@@ -118,7 +118,7 @@ impl<F, T: TryCastFrom<F>> TryCastInto<T> for F {
     }
 }
 
-/// Blanket implementation of a convenience method [`matches`] which allows calling
+/// Blanket implementation of a convenience method `matches` which allows calling
 /// `can_cast_from` with a type parameter. Do not implement this trait.
 pub trait Match: Sized {
     /// Returns `true` if `self` can be cast into the target type `T`.
