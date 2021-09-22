@@ -1,14 +1,17 @@
 [package]
 name = "safecast"
-version = "0.1.1"
-authors = ["haydnv"]
+version = "0.1.2"
+authors = ["haydn@tinychain.net"]
 edition = "2018"
-license-file = "LICENSE"
+license = "Apache-2.0"
 description = "Traits to define safe casting between types"
 repository = "https://github.com/haydnv/safecast.git"
 readme = "README.md"
 
 categories = ["rust-patterns"]
-keywords = ["cast", "casting", "safe-cast", "try-cast"]
+keywords = ["safe", "cast", "casting", "as"]
 
 [dependencies]
+
+[dev-dependencies]
+serde_json = "1.0"

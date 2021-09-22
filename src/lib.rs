@@ -1,28 +1,29 @@
 //! `safecast` defines traits analogous to [`From`], [`Into`], [`TryFrom`], and [`TryInto`] to
 //! standardize the implementation of casting between Rust types. The `can_cast_from` and
 //! `can_cast_into` methods borrow the source value, allowing pattern matching without moving.
-//!
-//! Example:
-//! ```ignore
-//! let value = serde_json::from_str("1");
-//! if value.matches::<i32>() {
-//!     println!("It's an integer!");
-//! } else if value.matches::<String>() {
-//!     let value = String::opt_cast_from(value).unwrap();
-//!     println!("no, it's a string: {}", value);
-//! }
-//! ```
 
 #[allow(unused_imports)]
 use std::convert::{TryFrom, TryInto};
+
+/// Conversion methods from a container type (such as an `enum`) and a target type `T`.
+pub trait AsType<T>: From<T> {
+    /// Borrow this instance as an instance of `T` if possible.
+    fn as_type(&self) -> Option<&T>;
+
+    /// Borrow this instance mutably as an instance of `T` if possible.
+    fn as_type_mut(&mut self) -> Option<&mut T>;
+
+    /// Convert this instance into an instance of `T` if possible.
+    fn into_type(self) -> Option<T>;
+}
 
 /// Trait for defining a cast operation from some source type `T`.
 /// Analogous to [`std::convert::From`].
 /// The inverse of [`CastInto`].
 /// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
 /// provides an implementation of `CastInto`.
-
 pub trait CastFrom<T> {
+    /// Cast an instance of `T` into an instance of `Self`.
     fn cast_from(value: T) -> Self;
 }
 
@@ -32,6 +33,7 @@ pub trait CastFrom<T> {
 /// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
 /// provides an implementation of `CastInto`.
 pub trait CastInto<T> {
+    /// Cast an instance of `Self` into an instance of `T`.
     fn cast_into(self) -> T;
 }
 
