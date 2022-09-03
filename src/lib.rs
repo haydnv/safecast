@@ -17,6 +17,40 @@ pub trait AsType<T>: From<T> {
     fn into_type(self) -> Option<T>;
 }
 
+#[macro_export]
+macro_rules! as_type {
+    ($c:ty, $variant:ident, $t:ty) => {
+        impl From<$t> for $c {
+            fn from(t: $t) -> Self {
+                Self::$variant(t)
+            }
+        }
+
+        impl AsType<$t> for $c {
+            fn as_type(&self) -> Option<&$t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+
+            fn as_type_mut(&mut self) -> Option<&mut $t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+
+            fn into_type(self) -> Option<$t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+        }
+    };
+}
+
 /// Trait for defining a cast operation from some source type `T`.
 /// Analogous to [`std::convert::From`].
 /// The inverse of [`CastInto`].
@@ -151,6 +185,15 @@ mod tests {
         bar: Bar,
     }
 
+    #[allow(dead_code)]
+    enum FooBar {
+        Foo(Foo),
+        Bar(Bar),
+        Baz(Baz),
+    }
+
+    as_type!(FooBar, Bar, Bar);
+
     impl CastFrom<Foo> for Bar {
         fn cast_from(foo: Foo) -> Self {
             Bar { b: foo.a as u32 }
@@ -195,5 +238,12 @@ mod tests {
 
         assert!(Baz::try_cast_from(bar0, |_| CastError).is_ok());
         assert!(Baz::try_cast_from(bar1, |_| CastError).is_err());
+    }
+
+    #[test]
+    fn test_as_type_macro() {
+        let bar = Bar { b: 0 };
+        let foo_bar = FooBar::Bar(bar);
+        assert_eq!(foo_bar.as_type(), Some(&bar));
     }
 }
