@@ -26,7 +26,7 @@ macro_rules! as_type {
             }
         }
 
-        impl AsType<$t> for $c {
+        impl $crate::AsType<$t> for $c {
             fn as_type(&self) -> Option<&$t> {
                 match self {
                     Self::$variant(variant) => Some(variant),
@@ -52,7 +52,7 @@ macro_rules! as_type {
 }
 
 /// Trait for defining a cast operation from some source type `T`.
-/// Analogous to [`std::convert::From`].
+/// Analogous to [`From`].
 /// The inverse of [`CastInto`].
 /// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
 /// provides an implementation of `CastInto`.
@@ -61,8 +61,8 @@ pub trait CastFrom<T> {
     fn cast_from(value: T) -> Self;
 }
 
-/// Trait for defining a cast operation to some destination type T.
-/// Analogous to [`std::convert::Into`].
+/// Trait for defining a cast operation to some destination type `T`.
+/// Analogous to [`Into`].
 /// The inverse of [`CastFrom`].
 /// Prefer implementing `CastFrom` over `CastInto` because implementing `CastFrom` automatically
 /// provides an implementation of `CastInto`.
