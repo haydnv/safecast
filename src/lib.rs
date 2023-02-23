@@ -17,6 +17,20 @@ pub trait AsType<T>: From<T> {
     fn into_type(self) -> Option<T>;
 }
 
+impl<T> AsType<T> for T {
+    fn as_type(&self) -> Option<&T> {
+        Some(self)
+    }
+
+    fn as_type_mut(&mut self) -> Option<&mut T> {
+        Some(self)
+    }
+
+    fn into_type(self) -> Option<T> {
+        Some(self)
+    }
+}
+
 #[macro_export]
 macro_rules! as_type {
     ($c:ty, $variant:ident, $t:ty) => {
