@@ -17,22 +17,51 @@ pub trait AsType<T>: From<T> {
     fn into_type(self) -> Option<T>;
 }
 
-impl<T> AsType<T> for T {
-    fn as_type(&self) -> Option<&T> {
-        Some(self)
-    }
-
-    fn as_type_mut(&mut self) -> Option<&mut T> {
-        Some(self)
-    }
-
-    fn into_type(self) -> Option<T> {
-        Some(self)
-    }
-}
-
+/// Automatically implement `From` and `AsType` for an enum variant.
+/// Example:
+/// ```
+/// use safecast::as_type;
+///
+/// struct Bar;
+///
+/// enum Foo {
+///     Bar(Bar),
+/// }
+///
+/// as_type!(Foo, Bar, Bar);
+/// ```
 #[macro_export]
 macro_rules! as_type {
+    ($c:ident<$($cg:tt),*>, $variant:ident, $t:ty) => {
+        impl<$($cg),+> From<$t> for $c<$($cg),+> {
+            fn from(t: $t) -> Self {
+                Self::$variant(t)
+            }
+        }
+
+        impl<$($cg),+> $crate::AsType<$t> for $c<$($cg),+> {
+            fn as_type(&self) -> Option<&$t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+
+            fn as_type_mut(&mut self) -> Option<&mut $t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+
+            fn into_type(self) -> Option<$t> {
+                match self {
+                    Self::$variant(variant) => Some(variant),
+                    _ => None,
+                }
+            }
+        }
+    };
     ($c:ty, $variant:ident, $t:ty) => {
         impl From<$t> for $c {
             fn from(t: $t) -> Self {
